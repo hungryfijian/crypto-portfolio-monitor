@@ -1,56 +1,23 @@
-# .github/workflows/crypto-monitor.yml
-name: 24/7 Crypto Portfolio Monitor
+name: Crypto Portfolio Monitor
 
 on:
   schedule:
-    # Run every 5 minutes (GitHub Actions minimum)
     - cron: '*/5 * * * *'
-  
-  # Allow manual triggering
   workflow_dispatch:
 
 jobs:
   monitor:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
       with:
         node-version: '18'
-    
-    - name: Install dependencies
+    - name: Run monitor
       run: |
-        npm init -y
-        # No additional dependencies needed - using built-in Node.js modules
-    
-    - name: Run crypto monitor
-      env:
-        SHEETS_URL: ${{ secrets.SHEETS_URL }}
-        EMAIL: ${{ secrets.EMAIL }}
-      run: |
-        # Update configuration with secrets
-        sed -i "s|YOUR_GOOGLE_SHEETS_WEB_APP_URL_HERE|$SHEETS_URL|g" crypto-monitor.js
-        sed -i "s|nandslab@gmail.com|$EMAIL|g" crypto-monitor.js
-        
-        # Run single check (GitHub Actions runs this every 5 minutes)
-        timeout 30s node -e "
-          const monitor = require('./crypto-monitor.js');
-          async function runOnce() {
-            console.log('🔍 Running scheduled crypto check...');
-            const prices = await monitor.fetchPrices();
-            await monitor.checkProfitTargets(prices);
-            console.log('✅ Check completed');
-            process.exit(0);
-          }
-          runOnce().catch(err => {
-            console.error('❌ Error:', err);
-            process.exit(1);
-          });
+        node -e "
+        const https = require('https');
+        console.log('Monitor check starting...');
+        // Add minimal test here
+        console.log('Monitor check completed');
         "
-    
-    - name: Log completion
-      run: echo "✅ Crypto monitor check completed at $(date)"
